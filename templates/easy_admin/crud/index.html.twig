@@ -1,0 +1,17 @@
+{% extends '@EasyAdmin/crud/index.html.twig' %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        console.log('au chargement');
+        function openPrintWindow(url) {
+            const printWindow = window.open(url, 'Reçu de commande', 'width=800,height=600,scrollbars=yes');
+            if (printWindow) {
+                printWindow.focus();
+            } else {
+                alert('Veuillez autoriser les popups pour ce site.');
+            }
+        }
+
+        
+    </script>

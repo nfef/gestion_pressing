@@ -163,7 +163,12 @@ class CommandeCrudController extends AbstractCrudController
                 return [
                     'id' => $entity->getId(),
                 ];
-            });
+            })
+            //->setHtmlAttributes(['target' => '_blank']); // Ouvrir dans un nouvel onglet
+            ->addCssClass('btn btn-primary')
+            ->setHtmlAttributes([
+                'onclick' => 'openPrintWindow(this.href); return false;'
+            ]);
 
         // Créer une action personnalisée "ouvrir_popup"
         $ouvrirPopupAction = Action::new('ouvrir_popup', 'Ouvrir Popup', 'fa fa-window-restore')

@@ -1,8 +1,8 @@
 easy_admin:
   design:
-        menu:
-            - { label: 'Dashboard', route: 'easyadmin' }
-            - { label: 'Utilisateurs', entity: App\Entity\User }
+      templates:
+          layout: '@EasyAdmin/layout.html.twig'
+          list: '@EasyAdmin/crud/index.html.twig'
 
   entities:
     User:

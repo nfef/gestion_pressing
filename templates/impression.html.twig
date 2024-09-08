@@ -32,10 +32,12 @@
             text-align: left;
         }
     </style>
+    
 </head>
 <body>
 
     <div class="">
+        <p><strong>RECU</strong></p>
         <p><strong>{{entreprise }}</strong></p>
         <p>{{ adresse }}</p>
         <p>{{ whatsapp }}</p>
@@ -48,6 +50,7 @@
         <p><strong>Date:</strong> {{ commande.dateCommande|date('d/m/Y') }}</p>
         <p><strong>Client:</strong> {{ commande.client.nom }}</p>
         <p><strong>Poids:</strong> {{ poids }} kg</p>
+        <p><strong>Prix/kg:</strong> {{ prixKilo }} F cfa</p>
     </div>
 
     <div class="line"></div>
@@ -61,10 +64,14 @@
 
     <div class="">
         <p><strong>{{ delai }}</strong></p>
-        <p><strong>{{ penalty }}</strong> <br> </p>
+        <p><strong>{{ penalty }}</strong> <br> <strong>{{ prix_penalty }}</strong> </p>
     </div>
     <p> Merci pour votre confiance </p>
+    <br>
 
 
 </body>
+
+
+
 </html>

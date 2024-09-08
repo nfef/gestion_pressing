@@ -20,23 +20,23 @@ security:
 
         main:
             anonymous: true
-            user_checker: App\Security\UserChecker
-            form_login:
-                login_path: app_login
-                check_path: login_check
-                default_target_path: /admin
-            logout:
-                path: app_logout
+            # user_checker: App\Security\UserChecker
+            # form_login:
+            #     login_path: app_login
+            #     check_path: login_check
+            #     default_target_path: /admin
+            # logout:
+            #     path: app_logout
                 # Optional: add a target URL after logout
-                target: /login
+                # target: /login
     # Easy way to control access for large sections of your site
     # Note: Only the *first* access control that matches will be used
     access_control:
      # Permet l'accès à la page de connexion
-        - { path: ^/login, roles: IS_AUTHENTICATED_ANONYMOUSLY }
+        - { path: ^/, roles: IS_AUTHENTICATED_ANONYMOUSLY }
          # Permet l'accès aux pages de l'administration pour les utilisateurs authentifiés
-        - { path: ^/admin, roles: ROLE_ADMIN }
-        - { path: ^/, roles: ROLE_USER }
+        # - { path: ^/admin, roles: ROLE_ADMIN }
+        # - { path: ^/, roles: ROLE_USER }
 
     role_hierarchy:
         ROLE_ADMIN: ROLE_USER
