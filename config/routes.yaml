@@ -1,3 +1,3 @@
-#index:
-#    path: /
-#    controller: App\Controller\DefaultController::index
+imprimer_commande:
+    path: '/imprimer-commande/{id}'
+    controller: App\Controller\Admin\CommandeCrudController::imprimerCommande

@@ -18,6 +18,8 @@ use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractCrudController;
 
 use EasyCorp\Bundle\EasyAdminBundle\Config\Crud;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Action;
+use EasyCorp\Bundle\EasyAdminBundle\Config\Actions;
+use EasyCorp\Bundle\EasyAdminBundle\Context\AdminContext;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 
 use Doctrine\ORM\EntityManagerInterface;
@@ -25,6 +27,11 @@ use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Dotenv\Dotenv;
 use Mike42\Escpos\PrintConnectors\WindowsPrintConnector;
 use Mike42\Escpos\Printer;
+use Dompdf\Dompdf;
+use Dompdf\Options;
+
+use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\ResponseHeaderBag;
 
 class CommandeCrudController extends AbstractCrudController
 {
@@ -34,6 +41,36 @@ class CommandeCrudController extends AbstractCrudController
     }
 
     public function persistEntity(EntityManagerInterface $entityManager, $entityInstance): void
+    {
+        parent::persistEntity($entityManager, $entityInstance);
+
+        // Appel de la méthode d'impression après la création de la commande
+        //$this->imprimerRecu($entityInstance);
+
+        // Génération du fichier PDF du reçu
+        $pdfOptions = new Options();
+        $pdfOptions->set('isRemoteEnabled', true);
+        $dompdf = new Dompdf($pdfOptions);
+        $receiptContent = $this->generateReceiptContent($entityInstance);
+        $dompdf->loadHtml($receiptContent);
+        $dompdf->render();
+        
+          // Chemin et nom du fichier PDF
+        $pdfDirectory = __DIR__ . '/../../documents/';
+        if (!file_exists($pdfDirectory)) {
+            mkdir($pdfDirectory, 0777, true);
+        }
+        $pdfFilePath = $pdfDirectory . 'receipt_' . uniqid() . '.pdf';
+        file_put_contents($pdfFilePath, $dompdf->output());
+
+        // Affichage de l'alerte pour imprimer le reçu
+        $response = $this->render('print_receipt.html.twig', [
+            'pdfFilePath' => $pdfFilePath,
+        ]);
+        $entityManager->flush();
+    }
+
+    public function persistEntity2(EntityManagerInterface $entityManager, $entityInstance): void
     {
         parent::persistEntity($entityManager, $entityInstance);
 
@@ -48,34 +85,25 @@ class CommandeCrudController extends AbstractCrudController
         ]);
     }
 
-    private function imprimerRecu(Commande $commande): void
-    {
-        
-        $dotenv = new Dotenv();
-        $dotenv->load(__DIR__.'/../../.env');
-        // $dotenv = Dotenv\Dotenv::createImmutable(__DIR__.'/../../.env'); // Chemin relatif pour accéder à la racine du projet
-        // $dotenv->load();
+    
 
-        // Récupération des données de la commande et des valeurs du .env
+    private function generateReceiptContent(Commande $commande): string
+    {
+        // Construction du contenu du reçu
+        $entreprise = getenv('NAME');
+        $adresse = getenv('ADRESSE');
         $poids = $commande->getPoids();
         $client = $commande->getClient()->getNom();
         $prixKilo = getenv('PRIX_KILO');
         $total = $poids * $prixKilo;
         $delai = getenv('DELAI');
         $penalty = getenv('PENALTY');
-        $entreprise = getenv('NAME');
-        $adresse = getenv('ADRESSE');
 
-        // Connexion à l'imprimante
-        $connector = new WindowsPrintConnector("usb://");
-        $printer = new Printer($connector);
-
-        // Construction du contenu du reçu
         $receiptContent = "
             $entreprise
             $adresse
 
-           
+        
             -----------------------------------------
             | Kg | Infos client | Prix/kg | Total |
             | $poids | $client | $prixKilo | $total |
@@ -90,12 +118,9 @@ class CommandeCrudController extends AbstractCrudController
             Merci pour votre confiance.
         ";
 
-        // Envoi de l'instruction d'impression
-        $printer->text($receiptContent);
-        $printer->cut();
-        $printer->close();
-
+        return $receiptContent;
     }
+
 
     
     public function configureFields(string $pageName): iterable
@@ -130,5 +155,100 @@ class CommandeCrudController extends AbstractCrudController
         ];
     }
 
+    public function configureActions(Actions $actions): Actions
+    {
+        // Créer une action personnalisée "imprimer"
+        $imprimerAction = Action::new('imprimer', 'Imprimer', 'fa fa-print')
+            ->linkToRoute('imprimer_commande', function (Commande $entity) {
+                return [
+                    'id' => $entity->getId(),
+                ];
+            });
+
+        // Créer une action personnalisée "ouvrir_popup"
+        $ouvrirPopupAction = Action::new('ouvrir_popup', 'Ouvrir Popup', 'fa fa-window-restore')
+            ->linkToCrudAction('ouvrirPopup')
+            ->displayIf(static function ($entity) {
+        // Vous pouvez définir ici les conditions pour afficher l'action
+            return true;
+        }); 
+
+
+        // Ajouter l'action "imprimer" après Edit et Delete
+        return $actions
+            ->add(Crud::PAGE_INDEX, $imprimerAction)
+            ->add(Crud::PAGE_INDEX, $ouvrirPopupAction);
+            //->setPermission('imprimer', 'ROLE_ADMIN'); // Ajoute des permissions si nécessaire
+    }
+
+        public function ouvrirPopup(AdminContext $context): Response
+        {
+            // Code pour ouvrir une nouvelle fenêtre en tant que popup
+            $htmlContent = '<h1>Contenu du Popup</h1>';
+            
+            // Générer une réponse avec le contenu HTML
+            $response = new Response($htmlContent);
+            $response->headers->set('Content-Type', 'text/html');
+
+            // Ajouter un script JavaScript pour ouvrir la fenêtre en tant que popup
+            $response->setContent('<script>window.open("", "Popup", "width=400,height=400");</script>'.$htmlContent);
+
+            return $response;
+        }
+
+
+    
+    public function imprimerCommande($id): Response
+    {
+        // Récupérer la commande à imprimer en fonction de l'identifiant $id
+        $commande = $this->getDoctrine()->getRepository(Commande::class)->find($id);
+       
+        // Générer le contenu à imprimer (par exemple, en utilisant un template Twig)
+        $contenuAImprimer = $this->renderView('impression.html.twig', [
+            'commande' => $commande,
+            'entreprise' => getenv('NAME'),
+            'adresse' => getenv('ADRESSE'),
+            'poids' => $commande->getPoids(),
+            'client' => $commande->getClient()->getNom(),
+            'prixKilo' => getenv('PRIX_KILO'),
+            //'total' => $poids * $prixKilo,
+            'delai' => getenv('DELAI'),
+            'penalty' => getenv('PENALTY'),
+            'whatsapp' => getenv('WHATSAPP'),
+            'prix_penalty' => getenv('PRIX_PENALTY'),
+        ]);
+
+        // Configuration de Dompdf
+        $options = new Options();
+        $options->set('isHtml5ParserEnabled', true);
+        $options->set('isRemoteEnabled', true);
+
+        // Créer une instance de Dompdf
+        $dompdf = new Dompdf($options);
+        $dompdf->loadHtml($contenuAImprimer);
+
+        
+
+        // Générer le PDF
+        $dompdf->render();
+
+        // Renvoyer le PDF en tant que réponse
+        $response = new Response($dompdf->output());
+
+        $disposition = $response->headers->makeDisposition(
+            ResponseHeaderBag::DISPOSITION_INLINE, 'commande.pdf'
+        );
+
+        $response->headers->set('Content-Type', 'application/pdf');
+
+        $response->headers->set('Content-Disposition', $disposition);
+
+        // Vous pouvez personnaliser davantage la réponse PDF si nécessaire
+
+         // Ajouter un attribut pour ouvrir le PDF dans une nouvelle fenêtre
+        $response->headers->set('target', '_blank');
+
+        return $response;
+    }
     
 }

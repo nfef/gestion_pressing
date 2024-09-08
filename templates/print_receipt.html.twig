@@ -1,0 +1,13 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Impression du reçu{% endblock %}
+
+{% block body %}
+    <h1>Impression du reçu</h1>
+    
+    <p>Le reçu de votre commande est prêt à être consulté et imprimé. Cliquez sur le lien ci-dessous :</p>
+    
+    <a href="{{ pdfFilePath }}" target="_blank">Télécharger le reçu au format PDF</a>
+    
+    <p>Merci pour votre commande!</p>
+{% endblock %}

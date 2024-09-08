@@ -1,0 +1,29 @@
+easy_admin:
+  design:
+        menu:
+            - { label: 'Dashboard', route: 'easyadmin' }
+            - { label: 'Utilisateurs', entity: App\Entity\User }
+
+  entities:
+    User:
+            class: App\Entity\User
+            list:
+                fields:
+                    - { property: 'id', label: 'ID' }
+                    - { property: 'email', label: 'Email' }
+                    - { property: 'username', label: 'Username' }
+                    - { property: 'phone', label: 'Phone' }
+                    - { property: 'roles', label: 'Roles' }
+            form:
+                fields:
+                    - { property: 'email', label: 'Email' }
+                    - { property: 'username', label: 'Username' }
+                    - { property: 'phone', label: 'Phone' }
+                    - { property: 'password', label: 'Password', type: 'password' }
+                    - { property: 'roles', label: 'Roles', type: 'choice', choices: { 'Admin': 'ROLE_ADMIN', 'User': 'ROLE_USER' }, multiple: true }
+    
+    Commande:
+      class: App\Entity\Commande
+      list:
+        fields:
+          - { property: 'bouton_imprimer', label: 'Imprimer', type: 'text', template: 'admin/imprimer_button.html.twig' }

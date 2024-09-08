@@ -1,23 +1,42 @@
 security:
+    
+    encoders:
+        App\Entity\User:
+            algorithm: bcrypt
     # https://symfony.com/doc/current/security.html#where-do-users-come-from-user-providers
+    # Les fournisseurs d'utilisateurs
     providers:
-        users_in_memory: { memory: null }
+        user_provider:
+            entity:
+                class: App\Entity\User
+                property: email
+
+
+    # Pare-feu pour l'administration
     firewalls:
         dev:
             pattern: ^/(_(profiler|wdt)|css|images|js)/
             security: false
+
         main:
-            anonymous: lazy
-            provider: users_in_memory
-
-            # activate different ways to authenticate
-            # https://symfony.com/doc/current/security.html#firewalls-authentication
-
-            # https://symfony.com/doc/current/security/impersonating_user.html
-            # switch_user: true
-
+            anonymous: true
+            user_checker: App\Security\UserChecker
+            form_login:
+                login_path: app_login
+                check_path: login_check
+                default_target_path: /admin
+            logout:
+                path: app_logout
+                # Optional: add a target URL after logout
+                target: /login
     # Easy way to control access for large sections of your site
     # Note: Only the *first* access control that matches will be used
     access_control:
-        # - { path: ^/admin, roles: ROLE_ADMIN }
-        # - { path: ^/profile, roles: ROLE_USER }
+     # Permet l'accès à la page de connexion
+        - { path: ^/login, roles: IS_AUTHENTICATED_ANONYMOUSLY }
+         # Permet l'accès aux pages de l'administration pour les utilisateurs authentifiés
+        - { path: ^/admin, roles: ROLE_ADMIN }
+        - { path: ^/, roles: ROLE_USER }
+
+    role_hierarchy:
+        ROLE_ADMIN: ROLE_USER

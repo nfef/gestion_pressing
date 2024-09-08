@@ -34,7 +34,8 @@ class LigneCommande
 
     public function __toString()
     {
-        return $this->id;
+        return 'Ligne de commande #' . $this->getId();
+    
     }
 
     public function getId(): ?int
