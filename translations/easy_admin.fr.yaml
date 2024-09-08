@@ -1,0 +1,6 @@
+# translations/easy_admin.fr.yaml
+easy_admin:
+    page_title_dashboard: 'Tableau de bord'
+    page_title_edit: 'Modifier %entity_label%'
+    page_title_new: 'Créer %entity_label%'
+    page_title_delete: 'Supprimer %entity_label%'

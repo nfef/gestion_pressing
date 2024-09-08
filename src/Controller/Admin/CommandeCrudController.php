@@ -170,37 +170,13 @@ class CommandeCrudController extends AbstractCrudController
                 'onclick' => 'openPrintWindow(this.href); return false;'
             ]);
 
-        // Créer une action personnalisée "ouvrir_popup"
-        $ouvrirPopupAction = Action::new('ouvrir_popup', 'Ouvrir Popup', 'fa fa-window-restore')
-            ->linkToCrudAction('ouvrirPopup')
-            ->displayIf(static function ($entity) {
-        // Vous pouvez définir ici les conditions pour afficher l'action
-            return true;
-        }); 
-
+       
 
         // Ajouter l'action "imprimer" après Edit et Delete
         return $actions
-            ->add(Crud::PAGE_INDEX, $imprimerAction)
-            ->add(Crud::PAGE_INDEX, $ouvrirPopupAction);
+            ->add(Crud::PAGE_INDEX, $imprimerAction);
             //->setPermission('imprimer', 'ROLE_ADMIN'); // Ajoute des permissions si nécessaire
     }
-
-        public function ouvrirPopup(AdminContext $context): Response
-        {
-            // Code pour ouvrir une nouvelle fenêtre en tant que popup
-            $htmlContent = '<h1>Contenu du Popup</h1>';
-            
-            // Générer une réponse avec le contenu HTML
-            $response = new Response($htmlContent);
-            $response->headers->set('Content-Type', 'text/html');
-
-            // Ajouter un script JavaScript pour ouvrir la fenêtre en tant que popup
-            $response->setContent('<script>window.open("", "Popup", "width=400,height=400");</script>'.$htmlContent);
-
-            return $response;
-        }
-
 
     
     public function imprimerCommande($id): Response

@@ -23,6 +23,7 @@ class LigneCommandeFormType extends AbstractType
                 'multiple' => false, // Permet de choisir un seul élément
                 'expanded' => false, // Affiche la liste déroulante en format standard
                 'by_reference' => false,
+                'choice_value' => 'id', // ou une autre propriété unique
             ]);
     }
 

@@ -32,6 +32,7 @@ class CommandeFormType extends AbstractType
                 'entry_options' => ['label' => false],
                 'allow_add' => true,
                 'by_reference' => false,
+                'choice_value' => 'id', // ou une autre propriété unique
             ]);
     }
 
